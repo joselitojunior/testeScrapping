@@ -41,25 +41,25 @@ export const postRouter = createTRPCRouter({
 
       try {
         var browser = await puppeteer.launch(options);
-      } catch(err) {
-        return 'erro 1'
+      } catch (err) {
+        return process.env.AWS_LAMBDA_FUNCTION_VERSION
       }
 
       try {
         var page = await browser.newPage();
-      } catch(err) {
+      } catch (err) {
         return 'erro 2'
       }
 
       try {
         await page.goto(url);
-      } catch(err) {
+      } catch (err) {
         return 'erro 3'
       }
 
       try {
         return page.title();
-      } catch(err) {
+      } catch (err) {
         return 'erro 4'
       }
     }),
