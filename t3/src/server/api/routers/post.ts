@@ -40,7 +40,8 @@ export const postRouter = createTRPCRouter({
 
 				result = await page.title();
 			} catch (error) {
-				return 'erro 1';
+				console.log(error)
+				return JSON.stringify(error);
 			}
 
 			if (browser !== null) {
