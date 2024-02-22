@@ -30,7 +30,7 @@ export const postRouter = createTRPCRouter({
 					args: chromium.args,
 					defaultViewport: chromium.defaultViewport,
 					executablePath: await chromium.executablePath,
-					headless: chromium.headless,
+					headless: true,
 					ignoreHTTPSErrors: true,
 				});
 
@@ -40,7 +40,7 @@ export const postRouter = createTRPCRouter({
 
 				result = await page.title();
 			} catch (error) {
-				return error;
+				return 'erro 1';
 			}
 
 			if (browser !== null) {
