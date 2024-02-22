@@ -3,78 +3,50 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 let post = {
-  id: 1,
-  name: "Hello World",
+	id: 1,
+	name: "Hello World",
 };
 
 let chrome = {} as any;
 let puppeteer: any;
 
 if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-  chrome = require('chrome-aws-lambda');
-  puppeteer = require('puppeteer-core');
+	chrome = require('chrome-aws-lambda');
+	puppeteer = require('puppeteer-core');
 } else {
-  puppeteer = require('puppeteer');
+	puppeteer = require('puppeteer');
 }
 
+const chromium = require('chrome-aws-lambda');
+
 export const postRouter = createTRPCRouter({
-  title: publicProcedure
-    .query(async () => {
+	title: publicProcedure
+		.query(async () => {
+			let result = null;
+			let browser = null;
 
-      const url = 'https://google.com';
+			try {
+				browser = await chromium.puppeteer.launch({
+					args: chromium.args,
+					defaultViewport: chromium.defaultViewport,
+					executablePath: await chromium.executablePath,
+					headless: chromium.headless,
+					ignoreHTTPSErrors: true,
+				});
 
-      let options = {};
+				let page = await browser.newPage();
 
-      if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
-        options = {
-          args: [
-            ...chrome.args,
-            "--hide-scrollbars",
-            "--disable-web-security"
-          ],
-          defaultViewport: await chrome.defaultViewport,
-          executablePath: await chrome.executablePath,
-          headless: true,
-          ignoreHTTPSErrors: true,
-        }
-      }
+				await page.goto('https://google.com');
 
-      try {
-        var browser = await puppeteer.launch(options);
-      } catch (err) {
-        return process.env.AWS_LAMBDA_FUNCTION_VERSION
-      }
+				result = await page.title();
+			} catch (error) {
+				return error;
+			}
 
-      try {
-        var page = await browser.newPage();
-      } catch (err) {
-        return 'erro 2'
-      }
+			if (browser !== null) {
+				await browser.close();
+			}
 
-      try {
-        await page.goto(url);
-      } catch (err) {
-        return 'erro 3'
-      }
-
-      try {
-        return page.title();
-      } catch (err) {
-        return 'erro 4'
-      }
-    }),
-
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      post = { id: post.id + 1, name: input.name };
-      return post;
-    }),
-
-  // getLatest: publicProcedure.query(() => {
-  //   return post;
-  // }),
+			return result;
+		}),
 });
