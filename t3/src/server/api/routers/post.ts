@@ -39,13 +39,29 @@ export const postRouter = createTRPCRouter({
         }
       }
 
-      const browser = await puppeteer.launch(options);
+      try {
+        var browser = await puppeteer.launch(options);
+      } catch(err) {
+        return 'erro 1'
+      }
 
-      const page = await browser.newPage();
+      try {
+        var page = await browser.newPage();
+      } catch(err) {
+        return 'erro 2'
+      }
 
-      page.goto(url, { timeout: 0 });
+      try {
+        await page.goto(url);
+      } catch(err) {
+        return 'erro 3'
+      }
 
-      return page.title();
+      try {
+        return page.title();
+      } catch(err) {
+        return 'erro 4'
+      }
     }),
 
   create: publicProcedure
